@@ -1,0 +1,36 @@
+name: OBS Platform CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master", "develop" ]
+  pull_request:
+    branches: [ "main", "master", "develop" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Build & Test Platform
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10.0 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore Dependencies
+        run: dotnet restore src/obs-project.sln
+
+      - name: Build Solution (Release)
+        run: dotnet build src/obs-project.sln --configuration Release --no-restore
+
+      - name: Run Unit & Architecture Tests
+        run: dotnet test src/obs-project.sln --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+
+      - name: Validate Docker Compose Configuration
+        run: |
+          docker compose -f docker/docker-compose.app.yml config --quiet
+          echo "Docker Compose file syntax and service configurations validated successfully!"

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Webhooks.Domain\Webhooks.Domain.csproj" />
+    <ProjectReference Include="..\Webhooks.Application\Webhooks.Application.csproj" />
+    <ProjectReference Include="..\Webhooks.Infrastructure\Webhooks.Infrastructure.csproj" />
+    <ProjectReference Include="..\BuildingBlocks\BuildingBlocks.Api\BuildingBlocks.Api.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

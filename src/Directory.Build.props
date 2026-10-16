@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <!-- NuGet advisory uyarılarını sessize al -->
+    <NoWarn>$(NoWarn);NU1902;NU1903</NoWarn>
+    
+    <!-- .NET 10 OpenApi Source Generator Interceptor desteği -->
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.AspNetCore.OpenApi.Generated</InterceptorsNamespaces>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,8 @@
+namespace Auditing.Domain;
+
+public readonly record struct AuditLogId(Guid Value)
+{
+    public static AuditLogId New() => new(Guid.NewGuid());
+    public static AuditLogId Empty => new(Guid.Empty);
+    public override string ToString() => Value.ToString();
+}

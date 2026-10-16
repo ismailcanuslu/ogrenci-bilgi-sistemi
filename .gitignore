@@ -1,0 +1,46 @@
+## Build & Compilation Outputs
+**/[Bb]in/
+**/[Oo]bj/
+**/[Ll]og/
+**/[Ll]ogs/
+**/TestResults/
+
+## Visual Studio & JetBrains & VS Code
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.sln.docstates
+.vscode/
+.idea/
+
+## macOS & OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+[Tt]humbs.db
+
+## Environment & Secrets
+**/.env
+**/.env.*
+!**/.env.example
+
+## Internal Scratch & Planning Notes
+**/guncel.md
+**/level2.md
+guncel.md
+level2.md
+
+
+
+## Frontend & Client Artifacts
+**/node_modules/
+**/dist/
+**/dist-ssr/
+
+## Build & Publish Artifacts
+publish/
+**/publish/

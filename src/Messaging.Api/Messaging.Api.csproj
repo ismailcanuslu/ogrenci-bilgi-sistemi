@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\BuildingBlocks\BuildingBlocks.Api\BuildingBlocks.Api.csproj" />
+        <ProjectReference Include="..\Messaging.Domain\Messaging.Domain.csproj" />
+        <ProjectReference Include="..\Messaging.Application\Messaging.Application.csproj" />
+        <ProjectReference Include="..\Messaging.Infrastructure\Messaging.Infrastructure.csproj" />
+    </ItemGroup>
+
+</Project>

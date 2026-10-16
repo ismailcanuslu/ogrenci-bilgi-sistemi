@@ -1,0 +1,298 @@
+services:
+  # ==========================================
+  # 1. Modular Monolith Host (All-in-One API)
+  # ==========================================
+  obs-bootstrapper:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.bootstrapper
+    container_name: obs-bootstrapper
+    restart: always
+    ports:
+      - "${API_PORT:-5050}:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__SecurityDatabase: "Server=obs-sqlserver;Database=obs_security;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Password123!};TrustServerCertificate=True;"
+      ConnectionStrings__FilesDatabase: "Server=obs-sqlserver;Database=obs_files;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Password123!};TrustServerCertificate=True;"
+      ConnectionStrings__NotificationsDatabase: "Server=obs-sqlserver;Database=obs_notifications;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Password123!};TrustServerCertificate=True;"
+      ConnectionStrings__AuditingDatabase: "Server=obs-sqlserver;Database=obs_auditing;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Password123!};TrustServerCertificate=True;"
+      ConnectionStrings__MessagingDatabase: "Server=obs-sqlserver;Database=obs_messaging;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Password123!};TrustServerCertificate=True;"
+      ConnectionStrings__SchedulingDatabase: "Server=obs-sqlserver;Database=obs_scheduling;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Password123!};TrustServerCertificate=True;"
+      # OpenTelemetry
+      OpenTelemetry__ServiceName: "obs-bootstrapper"
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://obs-jaeger:4317}
+      # Security (JWT & FIDO2)
+      Jwt__Issuer: ${JWT_ISSUER:-obs-platform}
+      Jwt__Audience: ${JWT_AUDIENCE:-obs-api}
+      Jwt__AccessTokenLifetimeMinutes: ${JWT_LIFETIME_MINUTES:-60}
+      Jwt__PrivateKey: ${JWT_PRIVATE_KEY}
+      Jwt__PublicKey: ${JWT_PUBLIC_KEY:-development-public-key}
+      Fido2__Rpid: ${FIDO2_RPID:-localhost}
+      Fido2__RpName: ${FIDO2_RPNAME:-OBS Platform}
+      Fido2__Origin: ${FIDO2_ORIGIN:-http://localhost:5000}
+      # Files & Local Storage (MinIO devre dışı bırakıldı - sistem kaynağı tasarrufu)
+      Files__Storage__Provider: ${FILES_STORAGE_PROVIDER:-Local}
+      Files__Storage__BasePath: ${FILES_STORAGE_BASE_PATH:-uploads}
+      # Files__Storage__S3__ServiceUrl: http://obs-minio:9000
+      # Files__Storage__S3__BucketName: ${MINIO_BUCKET_NAME:-obs-files}
+      # Files__Storage__S3__AccessKey: ${MINIO_ROOT_USER:-minioadmin}
+      # Files__Storage__S3__SecretKey: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      # Files__Storage__S3__Region: ${MINIO_REGION:-eu-central-1}
+      # Files__Storage__S3__ForcePathStyle: "true"
+      Files__Validation__MaxFileSizeInBytes: ${FILES_MAX_SIZE_BYTES:-52428800}
+      Files__Security__EnforceAuthorization: ${FILES_ENFORCE_AUTH:-false}
+      Files__Security__AllowAnonymousRead: "false"
+      Files__Security__AdminRoleName: "Admin"
+      # Notifications (Mailpit/SMTP devre dışı bırakıldı - Console log kullanılıyor)
+      Notifications__Provider: ${NOTIFICATIONS_PROVIDER:-Console}
+      # Notifications__Smtp__Host: obs-mailpit
+      # Notifications__Smtp__Port: ${SMTP_PORT:-1025}
+      # Notifications__Smtp__EnableSsl: "false"
+      # Notifications__Smtp__FromEmail: ${SMTP_FROM_EMAIL:-noreply@example.com}
+      # Notifications__Smtp__FromName: ${SMTP_FROM_NAME:-OBS Platform}
+      Notifications__Branding__CompanyName: ${BRANDING_COMPANY_NAME:-OBS Platform}
+      Notifications__Branding__LogoUrl: ${BRANDING_LOGO_URL:-https://example.com/logo.png}
+      Notifications__Branding__SupportUrl: ${BRANDING_SUPPORT_URL:-https://support.example.com}
+      Notifications__Branding__SupportEmail: ${BRANDING_SUPPORT_EMAIL:-support@example.com}
+      Notifications__Branding__CompanyAddress: ${BRANDING_COMPANY_ADDRESS:-Example University Kampus}
+      Notifications__Branding__PrimaryColor: ${BRANDING_PRIMARY_COLOR:-#6166BE}
+      Notifications__Branding__AccentColor: ${BRANDING_ACCENT_COLOR:-#F0F0F9}
+      Notifications__Branding__DefaultTheme: ${BRANDING_DEFAULT_THEME:-ModernCard}
+      Notifications__Sms__Provider: ${SMS_PROVIDER:-Console}
+      Notifications__Sms__SenderHeader: ${SMS_SENDER_HEADER:-OBSPLATFORM}
+      Notifications__Sms__EndpointUrl: ${SMS_ENDPOINT_URL:-https://api.sms-provider.example.com/v1/send}
+      Notifications__Sms__ApiKey: ${SMS_API_KEY:-example-api-key}
+      Notifications__Sms__ApiSecret: ${SMS_API_SECRET:-}
+    networks:
+      - obs-network
+
+  # ==========================================
+  # 2. Security Standalone API
+  # ==========================================
+  obs-security-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.security
+    container_name: obs-security-api
+    restart: always
+    ports:
+      - "${SECURITY_API_PORT:-5001}:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__SecurityDatabase: "Server=obs-sqlserver;Database=obs_security;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Password123!};TrustServerCertificate=True;"
+      OpenTelemetry__ServiceName: "obs-security-api"
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://obs-jaeger:4317}
+      Jwt__Issuer: ${JWT_ISSUER:-obs-platform}
+      Jwt__Audience: ${JWT_AUDIENCE:-obs-api}
+      Jwt__AccessTokenLifetimeMinutes: ${JWT_LIFETIME_MINUTES:-60}
+      Jwt__PrivateKey: ${JWT_PRIVATE_KEY}
+      Jwt__PublicKey: ${JWT_PUBLIC_KEY:-development-public-key}
+      Fido2__Rpid: ${FIDO2_RPID:-localhost}
+      Fido2__RpName: ${FIDO2_RPNAME:-OBS Platform}
+      Fido2__Origin: ${FIDO2_ORIGIN:-http://localhost:5001}
+    networks:
+      - obs-network
+
+  # ==========================================
+  # 3. Files Standalone API
+  # ==========================================
+  obs-files-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.files
+    container_name: obs-files-api
+    restart: always
+    ports:
+      - "${FILES_API_PORT:-5002}:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__FilesDatabase: "Server=obs-sqlserver;Database=obs_files;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Password123!};TrustServerCertificate=True;"
+      OpenTelemetry__ServiceName: "obs-files-api"
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://obs-jaeger:4317}
+      Files__Storage__Provider: ${FILES_STORAGE_PROVIDER:-Local}
+      Files__Storage__BasePath: ${FILES_STORAGE_BASE_PATH:-uploads}
+      # Files__Storage__S3__ServiceUrl: http://obs-minio:9000
+      # Files__Storage__S3__BucketName: ${MINIO_BUCKET_NAME:-obs-files}
+      # Files__Storage__S3__AccessKey: ${MINIO_ROOT_USER:-minioadmin}
+      # Files__Storage__S3__SecretKey: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      # Files__Storage__S3__Region: ${MINIO_REGION:-eu-central-1}
+      # Files__Storage__S3__ForcePathStyle: "true"
+      Files__Validation__MaxFileSizeInBytes: ${FILES_MAX_SIZE_BYTES:-52428800}
+      Files__Security__EnforceAuthorization: ${FILES_ENFORCE_AUTH:-false}
+      Files__Security__AllowAnonymousRead: "false"
+      Files__Security__AdminRoleName: "Admin"
+    networks:
+      - obs-network
+
+  # ==========================================
+  # 4. Notifications Standalone API
+  # ==========================================
+  obs-notifications-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.notifications
+    container_name: obs-notifications-api
+    restart: always
+    ports:
+      - "${NOTIFICATIONS_API_PORT:-5003}:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__NotificationsDatabase: "Server=obs-sqlserver;Database=obs_notifications;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Password123!};TrustServerCertificate=True;"
+      OpenTelemetry__ServiceName: "obs-notifications-api"
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://obs-jaeger:4317}
+      Notifications__Provider: ${NOTIFICATIONS_PROVIDER:-Console}
+      # Notifications__Smtp__Host: obs-mailpit
+      # Notifications__Smtp__Port: ${SMTP_PORT:-1025}
+      # Notifications__Smtp__EnableSsl: "false"
+      # Notifications__Smtp__FromEmail: ${SMTP_FROM_EMAIL:-noreply@example.com}
+      # Notifications__Smtp__FromName: ${SMTP_FROM_NAME:-OBS Platform}
+      Notifications__Branding__CompanyName: ${BRANDING_COMPANY_NAME:-OBS Platform}
+      Notifications__Branding__LogoUrl: ${BRANDING_LOGO_URL:-https://example.com/logo.png}
+      Notifications__Branding__SupportUrl: ${BRANDING_SUPPORT_URL:-https://support.example.com}
+      Notifications__Branding__SupportEmail: ${BRANDING_SUPPORT_EMAIL:-support@example.com}
+      Notifications__Branding__CompanyAddress: ${BRANDING_COMPANY_ADDRESS:-Example University Kampus}
+      Notifications__Branding__PrimaryColor: ${BRANDING_PRIMARY_COLOR:-#6166BE}
+      Notifications__Branding__AccentColor: ${BRANDING_ACCENT_COLOR:-#F0F0F9}
+      Notifications__Branding__DefaultTheme: ${BRANDING_DEFAULT_THEME:-ModernCard}
+      Notifications__Sms__Provider: ${SMS_PROVIDER:-Console}
+      Notifications__Sms__SenderHeader: ${SMS_SENDER_HEADER:-OBSPLATFORM}
+      Notifications__Sms__EndpointUrl: ${SMS_ENDPOINT_URL:-https://api.sms-provider.example.com/v1/send}
+      Notifications__Sms__ApiKey: ${SMS_API_KEY:-example-api-key}
+      Notifications__Sms__ApiSecret: ${SMS_API_SECRET:-}
+    networks:
+      - obs-network
+
+  # ==========================================
+  # 5. Translations Standalone API
+  # ==========================================
+  obs-translations-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.translations
+    container_name: obs-translations-api
+    restart: always
+    ports:
+      - "${TRANSLATIONS_API_PORT:-5004}:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      OpenTelemetry__ServiceName: "obs-translations-api"
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://obs-jaeger:4317}
+    networks:
+      - obs-network
+
+  # ==========================================
+  # 6. Auditing Standalone API
+  # ==========================================
+  obs-auditing-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.auditing
+    container_name: obs-auditing-api
+    restart: always
+    ports:
+      - "${AUDITING_API_PORT:-5005}:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__AuditingDb: "Server=obs-sqlserver;Database=obs_auditing;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Password123!};TrustServerCertificate=True;"
+      OpenTelemetry__ServiceName: "obs-auditing-api"
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://obs-jaeger:4317}
+    networks:
+      - obs-network
+
+  # ==========================================
+  # 7. Messaging Standalone API
+  # ==========================================
+  obs-messaging-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.messaging
+    container_name: obs-messaging-api
+    restart: always
+    ports:
+      - "${MESSAGING_API_PORT:-5006}:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__MessagingDb: "Server=obs-sqlserver;Database=obs_messaging;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Password123!};TrustServerCertificate=True;"
+      OpenTelemetry__ServiceName: "obs-messaging-api"
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://obs-jaeger:4317}
+    networks:
+      - obs-network
+
+  # ==========================================
+  # 8. Scheduling Standalone API
+  # ==========================================
+  obs-scheduling-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.scheduling
+    container_name: obs-scheduling-api
+    restart: always
+    ports:
+      - "${SCHEDULING_API_PORT:-5007}:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__SchedulingDb: "Server=obs-sqlserver;Database=obs_scheduling;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Password123!};TrustServerCertificate=True;"
+      OpenTelemetry__ServiceName: "obs-scheduling-api"
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://obs-jaeger:4317}
+    networks:
+      - obs-network
+
+  # ==========================================
+  # 9. Webhooks Standalone API
+  # ==========================================
+  obs-webhooks-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.webhooks
+    container_name: obs-webhooks-api
+    restart: always
+    ports:
+      - "${WEBHOOKS_API_PORT:-5008}:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__WebhooksDb: "Server=obs-sqlserver;Database=obs_webhooks;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Password123!};TrustServerCertificate=True;"
+      OpenTelemetry__ServiceName: "obs-webhooks-api"
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://obs-jaeger:4317}
+    networks:
+      - obs-network
+
+  # ==========================================
+  # 10. ImportExport Standalone API
+  # ==========================================
+  obs-importexport-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.importexport
+    container_name: obs-importexport-api
+    restart: always
+    ports:
+      - "${IMPORTEXPORT_API_PORT:-5009}:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      OpenTelemetry__ServiceName: "obs-importexport-api"
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://obs-jaeger:4317}
+    networks:
+      - obs-network
+
+  # ==========================================
+  # 11. React Web App SPA (Ant Design Frontend)
+  # ==========================================
+  obs-react-spa:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.react-spa
+    container_name: obs-react-spa
+    restart: always
+    ports:
+      - "${SPA_PORT:-3000}:80"
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:5050}
+    depends_on:
+      - obs-bootstrapper
+    networks:
+      - obs-network
+
+networks:
+  obs-network:
+    name: obs-network
+    driver: bridge

@@ -1,0 +1,17 @@
+**/.git
+**/.gitignore
+**/.dockerignore
+**/.vs
+**/.vscode
+**/.idea
+**/.DS_Store
+**/bin/
+**/obj/
+**/TestResults/
+**/*.log
+**/.env
+**/.env.*
+!**/.env.example
+**/guncel.md
+**/level2.md
+**/node_modules/

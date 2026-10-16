@@ -1,0 +1,96 @@
+services:
+  obs-sqlserver:
+    image: ${MSSQL_CONTAINER_IMAGE:-mcr.microsoft.com/mssql/server:2022-latest}
+    container_name: ${MSSQL_CONTAINER_NAME:-obs-sqlserver}
+    restart: always
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-Password123!}
+      MSSQL_PID: "Developer"
+    ports:
+      - "${MSSQL_PORT:-1433}:1433"
+    volumes:
+      - obs_sqldata:/var/opt/mssql
+    networks:
+      - obs-network
+
+  # [DEVRE DIŞI - KULLANILMIYOR]: Projede PostgreSQL kullanılmamaktadır, tüm servisler MSSQL kullanmaktadır.
+  # obs-postgres:
+  #   image: ${POSTGRES_CONTAINER_IMAGE:-postgres:16-alpine}
+  #   container_name: ${POSTGRES_CONTAINER_NAME:-obs-postgres}
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: ${POSTGRES_USER}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #     POSTGRES_DB: ${POSTGRES_DB}
+  #   ports:
+  #     - "${POSTGRES_PORT:-5432}:5432"
+  #   volumes:
+  #     - obs_pgdata:/var/lib/postgresql/data
+  #   networks:
+  #     - obs-network
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
+
+  obs-redis:
+    image: ${REDIS_CONTAINER_IMAGE:-redis:alpine}
+    container_name: ${REDIS_CONTAINER_NAME:-obs-redis}
+    restart: always
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - obs_redisdata:/data
+    networks:
+      - obs-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # [DEVRE DIŞI - SİSTEM KAYNAK TASARRUFU]: MinIO dosya depolama servisi
+  # obs-minio:
+  #   image: minio/minio:latest
+  #   container_name: obs-minio
+  #   restart: always
+  #   command: server /data --console-address ":9001"
+  #   environment:
+  #     MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+  #     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+  #   ports:
+  #     - "${MINIO_PORT:-9000}:9000"
+  #     - "${MINIO_CONSOLE_PORT:-9001}:9001"
+  #   volumes:
+  #     - obs_miniodata:/data
+  #   networks:
+  #     - obs-network
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
+
+  # [DEVRE DIŞI - SİSTEM KAYNAK TASARRUFU]: Mailpit SMTP e-posta test arayüzü
+  # obs-mailpit:
+  #   image: axllent/mailpit:latest
+  #   container_name: obs-mailpit
+  #   restart: always
+  #   ports:
+  #     - "${SMTP_PORT:-1025}:1025"
+  #     - "${MAILPIT_UI_PORT:-8025}:8025"
+  #   networks:
+  #     - obs-network
+
+volumes:
+  obs_sqldata:
+  # obs_pgdata:
+  obs_redisdata:
+  # obs_miniodata:
+
+networks:
+  obs-network:
+    name: obs-network
+    driver: bridge\n
