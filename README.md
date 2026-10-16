@@ -1,385 +1,186 @@
-<div align="center">
-
-<img src="docs/logo.png" alt="Universal .NET API Logo" width="180" />
-
-# 🌐 UNIVERSAL .NET API KERNEL
-### Enterprise-Grade Clean Architecture • Modular Monolith & Microservices Engine
+# 🎓 Üniversite Öğrenci Bilgi ve Yönetim Sistemi (OBS / ÜBYS)
+### Enterprise-Grade Clean Architecture • Modular Monolith • Domain-Driven Design (DDD) • React 19 SPA
 
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg?style=for-the-badge&logo=githubactions)](#)
 [![Tests](https://img.shields.io/badge/Tests-104%20Passing-success.svg?style=for-the-badge&logo=dotnet)](#)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4.svg?style=for-the-badge&logo=dotnet)](#)
 [![C#](https://img.shields.io/badge/C%23-13-239120.svg?style=for-the-badge&logo=csharp)](#)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?style=for-the-badge&logo=docker)](#)
-[![API Documentation](https://img.shields.io/badge/Scalar-OpenAPI%20Interactive-FF5722.svg?style=for-the-badge)](#)
+[![React](https://img.shields.io/badge/React-19.2-61DAFB.svg?style=for-the-badge&logo=react)](#)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6.svg?style=for-the-badge&logo=typescript)](#)
+[![Database](https://img.shields.io/badge/Database-SQL%20Server%202022-CC292B.svg?style=for-the-badge&logo=microsoftsqlserver)](#)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](#)
 
 <p align="center">
-  A battle-tested, modular enterprise backend kernel built on <b>Domain-Driven Design (DDD)</b>, <b>Clean Architecture</b>, and <b>CQRS</b>.<br>
-  Run it as a single high-performance <b>Modular Monolith</b> or deploy each module as an independent <b>Microservice</b>.
+  Üniversitelerin tüm akademik, idari, öğrenci ve personel süreçlerini modern yazılım mühendisliği ilkeleriyle uçtan uca yöneten; <b>Domain-Driven Design (DDD)</b>, <b>Clean Architecture</b>, <b>CQRS</b> ve <b>Modular Monolith</b> mimarisine sahip yeni nesil kurumsal Üniversite Bilgi Yönetim Sistemi (ÜBYS).
 </p>
 
-[Quick Start](#-quick-start--deployment) •
-[Modules Overview](#-modular-ecosystem-take-what-you-need) •
-[Architecture](#-architectural-overview) •
-[Docker Guide](#-docker-compose--environment-configuration) •
-[Documentation](docs/deployment-and-env.md)
-
-</div>
-
 ---
 
-## 💡 The Genesis: From Student Information System (OBS) to a Universal Enterprise Kernel
+## 🏛️ Mimari Vizyon ve İlkeler
 
-> [!NOTE]
-> **Why are there references to `obs-` in container names or namespaces?**  
-> This project originally started as an enterprise **Student Information System (Öğrenci Bilgi Sistemi - OBS)**. During architecture evolution, all core foundations (authentication, WebAuthn passkeys, omni-channel notifications, object storage, transactional outbox, resilience, scheduling, webhooks, audit logs, and internationalization) were decoupled into clean, autonomous vertical slices.  
-> 
-> Today, this repository is a **Universal Modular Enterprise Kernel**. It can be used as the backbone for:
-> - 🎓 **Student Information Systems (OBS)** & Educational Portals
-> - 🏢 **ERP & CRM Backends**
-> - 💳 **Fintech & Banking Platforms**
-> - 🚀 **Multi-Tenant SaaS Products**
-> - 🛒 **E-Commerce & Logistics Engines**
-> 
-> *You can take the entire kernel or plug individual modules directly into your existing infrastructure.*
-
----
-
-## 🏛️ Architectural Overview
-
-The solution adheres strictly to **Clean Architecture** boundaries enforced by automated architecture tests (`NetArchTest.Rules`):
+Bu sistem sıradan bir CRUD uygulaması değildir. Üniversite organizasyon yapısı, fakülteler, bölümler, müfredat sürümleri, dersler, öğretim elemanları, öğrenci kayıtları, ders seçimleri, şubeleşme, çan eğrisi notlandırma ve idari teşkilat birbiriyle yüksek tutarlılık içinde çalışır.
 
 ```mermaid
 graph TD
-    subgraph "Presentation Layer"
-        Scalar[Scalar OpenAPI UI /scalar/v1]
-        Endpoints[Minimal API Endpoints]
+    subgraph "Sunum Katmanı (Presentation)"
+        SPA["React 19 SPA (Ant Design & Vite)"]
+        Scalar["Scalar OpenAPI Dokümantasyonu (/scalar/v1)"]
+        Endpoints["Minimal API Endpoints"]
     end
 
-    subgraph "Core Domain & Application"
-        Application[Application Layer: CQRS & MediatR]
-        Domain[Domain Layer: Entities, ValueObjects & Events]
+    subgraph "Uygulama & Çekirdek (Core Domain & Application)"
+        Application["Application Katmanı (CQRS, MediatR, FluentValidation)"]
+        Domain["Domain Katmanı (Entities, Value Objects, Domain Events)"]
     end
 
-    subgraph "Infrastructure Layer"
-        EFCore[EF Core DbContexts]
-        Cache[Hybrid Cache: Redis & Memory]
-        Resilience[Polly v8 Pipelines]
-        Storage[MinIO / S3 Object Storage]
-        Mail[Mailpit / SMTP & SMS Gateways]
+    subgraph "Altyapı Katmanı (Infrastructure)"
+        MSSQL[("Microsoft SQL Server 2022 (EF Core)")]
+        Redis[("Redis Hybrid Cache (L1/L2)")]
+        Resilience["Polly v8 Hata Toleransı & Circuit Breaker"]
+        LocalStorage["Yerel Fiziksel Depolama (Local Storage)"]
+        ConsoleMail["Konsol & SMTP Bildirim Motoru"]
     end
 
+    SPA --> Endpoints
     Endpoints --> Application
     Application --> Domain
-    EFCore --> Domain
-    Application --> EFCore
-    Application --> Cache
+    Application --> MSSQL
+    Application --> Redis
     Application --> Resilience
+    Application --> LocalStorage
     Endpoints --> Scalar
 ```
 
----
-
-## 🗂️ Modular Ecosystem (At a Glance)
-
-Before inspecting individual source files or directories, use this quick executive summary to see what each module provides out-of-the-box:
-
-| Module | Core Purpose & Capabilities | Supported Providers & Engines | Standalone Docs |
-|---|---|---|---|
-| **📁 Files** | Multi-target file storage, chunked uploads, SHA-256 deduplication, access authorization & streaming | **Local Physical Disk**, **AWS S3**, **MinIO S3** | [📖 Read Guide](docs/modules/files.md) |
-| **📬 Notifications** | Responsive HTML card template engine (OTP code or button link), brand customization, multi-channel delivery | **SMTP (Mailpit)**, **HTTP SMS Gateways**, Console Fallback | [📖 Read Guide](docs/modules/notifications.md) |
-| **🛡️ Security** | Biometric & hardware passwordless authentication, asymmetric RSA token signing, session lifecycle & revocation | **FIDO2 / WebAuthn**, **RSA JWT**, Sliding Refresh Tokens | [📖 Read Guide](docs/modules/security.md) |
-| **🌐 Translations** | Dynamic multilingual localization catalog with automatic fallback to Turkish for missing keys | In-Memory, **Redis L2 Cache**, TR / EN / DE / RU | [📖 Read Guide](docs/modules/translations.md) |
-| **📝 Auditing** | Tamper-resistant mutation logs, entity before/after states, actor client IP, OpenTelemetry correlation | Dedicated Database, **OpenTelemetry TraceId** | [📖 Read Guide](docs/modules/auditing.md) |
-| **📨 Messaging** | Transactional Outbox Pattern for guaranteed at-least-once message delivery, asynchronous dispatcher | **RabbitMQ**, MassTransit, EF Core Outbox | [📖 Read Guide](docs/modules/messaging.md) |
-| **⏰ Scheduling** | Enterprise background job scheduler, 5-field cron recurring jobs, one-shot delayed executions | Background Worker Engine, Execution Logs | [📖 Read Guide](docs/modules/scheduling.md) |
-| **🔗 Webhooks** | Real-time outbound HTTP event dispatcher, cryptographic payload signatures, automatic retries | **HMAC-SHA256**, Exponential Backoff, Secret Rotation | [📖 Read Guide](docs/modules/webhooks.md) |
-| **📊 Import & Export** | Asynchronous background batch file processing, real-time progress polling, row-level validation errors | **CSV**, **Excel (XLSX)** | [📖 Read Guide](docs/modules/import-export.md) |
-| **🧱 BuildingBlocks** | Shared Domain & Application primitives, Polly v8 resilience pipelines, hybrid caching, OpenAPI Scalar UI | **Polly v8**, **Redis + Memory Cache**, **Scalar UI** | [📖 Read Guide](docs/modules/building-blocks.md) |
+### 📐 Temel Mühendislik Kuralları
+1. **Vertical Slice & Clean Architecture:** Domain katmanı kesinlikle EF Core, HTTP, JWT veya dış altyapılara bağımlı değildir.
+2. **Rich Domain Model:** Üniversite iş kuralları (AKTS sınırları, önkoşullar, harç kontrolü, çan eğrisi hesaplamaları) controller veya handler içerisine dağıtılmamış, Aggregate Root ve Domain Entity nesnelerinde kapsüllenmiştir.
+3. **CQRS & MediatR:** Her kullanım senaryosu bağımsız bir Command/Query ve Handler üzerinden yürütülür.
+4. **İşlemsel Bütünlük (Transactional Outbox):** Kritik durum değişiklikleri domain event olarak veritabanı işlemiyle atomik kaydedilir ve kayıpsız dağıtılır.
+5. **Modüler Monolit:** Tüm akademik ve idari modüller `obs-bootstrapper` içerisinde tek bir yüksek performanslı serviste çalışır; istendiğinde bağımsız mikroservis olarak da ölçeklenebilir.
 
 ---
 
-### 📑 Detailed Module Breakdown (Click to Expand Tabs)
+## 🧭 Fonksiyonel Modüller & Özellikler
 
-Each module is completely decoupled with its own Domain, Application, Infrastructure, and API projects. **Click each tab below to explore features, configuration, and standalone usage:**
+### 1. 🏛️ Akademik Yapı & Müfredat Kataloğu
+* **Fakülte ve Bölüm Teşkilatı:** Üniversiteye bağlı fakülteler, enstitüler, meslek yüksekokulları ve bölümlerin hiyerarşik yönetimi. Fakülte kurarken öğretim üyeleri listesinden dekan seçimi.
+* **Müfredat Sürümleri & AKTS:** Bölümlere ait dönemlik ders planları, zorunlu/seçmeli havuzlar, ders kodu, teorik-pratik saatler, yerel kredi ve AKTS sınırları (dönemlik 30-45 AKTS esnek limit ayarları).
+* **Önkoşul Zincirleri:** Bir dersin alınabilmesi için önceki dönemlerden başarılması gereken önkoşul derslerinin mantıksal kontrolü.
 
-<details open>
-<summary><b>🛡️ 1. Security Module (Passkeys, RSA JWT, Sessions)</b></summary>
-<br>
+### 2. 👨‍🎓 Kullanıcı & Nüfus Masası
+* **Asil Öğrenci Masası:** Örgün lisans, ön lisans ve lisansüstü öğrencilerin T.C. Kimlik / YKN doğrulama, öğrenci numarası üretimi, sınıf/dönem takibi, danışman öğretim üyesi ataması ve ilişik kesme/mezuniyet durumları.
+* **Misafir & Değişim Öğrencileri:** **Erasmus+**, **Farabi**, **Mevlana** ve **Özel Öğrenci** statüsündeki öğrencilerin geldiği üniversite, misafir öğrenci numarası ve intibak protokolü takibi.
+* **Eğitmen & Akademisyen Masası:** Öğretim üyeleri ve araştırma görevlilerinin akademik kadro kayıtları, unvan yönetimi (Prof. Dr., Doç. Dr., Dr. Öğr. Üyesi, Arş. Gör., Öğr. Gör. veya Unvansız).
 
-> **Standalone Documentation:** [`docs/modules/security.md`](docs/modules/security.md)
+### 3. 🔬 Öğrenim, Yayın & Araştırma Masası (Akademik Profil)
+YÖKSİS ve AVESİS standartlarında, her akademisyenin detaylı profilini ve bilimsel çıktılarını içeren sekmeli (tabbed) yönetim:
+* **Açık Erişim Rozetleri:** Doğrulanmış **ORCID ID** bağlantısı, **Google Scholar Profil Linki**, **YÖKSİS Araştırmacı Numarası**, **Scopus ID** ve Kişisel Web Sayfası.
+* **Öğrenim Bilgileri:** Lisans, Yüksek Lisans, Doktora dereceleri, üniversite, fakülte, mezuniyet yılı, tez konusu ve tez danışmanı.
+* **Makaleler:** SCI-Expanded, SSCI, Scopus ve TR Dizin indeksli makaleler, yayın yılı, cilt/sayı, sayfa aralığı, **tıklanabilir DOI linki** ve **tam metin web bağlantısı**.
+* **Kitaplar & Kitap Bölümleri:** Telif kitap, bölüm yazarlığı, çeviriler, yayınevi, basım yılı, **ISBN numarası** ve doğrudan kitap erişim linki.
+* **Bildiriler:** Ulusal/uluslararası kongre sunumları (Sözlü/Poster), kongre şehri, tarihi ve bildiri kitapçığı bağlantısı.
+* **Projeler & Ar-Ge:** TÜBİTAK (1001, 1002, 3501), BAP, AB Horizon, Erasmus+ ve Sanayi projeleri; proje rolü (Yürütücü/Araştırmacı), bütçe ve durum.
+* **Verilen Dersler & Danışmanlıklar:** Yürütülen ders yükü ve yönetilen yüksek lisans/doktora tezleri.
 
-- **🔑 FIDO2 / WebAuthn Passkeys**: Native passwordless login (Touch ID, Face ID, Windows Hello, YubiKeys).
-- **🛡️ Asymmetric RSA JWT**: Access tokens signed via private keys and verified via public keys.
-- **🔄 Secure Refresh Tokens & Sessions**: Remote session revocation and device management.
-- **👥 Claims-Based RBAC**: Fine-grained role and permission management.
+### 4. 🏢 İdari Teşkilat & Personel Masası
+Kullanıcı yönetiminden tamamen ayrılmış bağımsız idari yapılanma:
+* **İdari Birimler Masası:** Daire Başkanlıkları (Öğrenci İşleri D.B., Bilgi İşlem D.B., Personel D.B., SKS), Genel Sekreterlik, Koordinatörlükler, Fakülte/Enstitü Sekreterlikleri, birim amirleri, dahili telefon ve yerleşke binaları.
+* **İdari Kadro Unvanları:** Devlet memurları ve sözleşmeli personel kadroları (Daire Başkanı, Şube Müdürü, Şef, Memur, Bilgisayar İşletmeni, V.H.K.İ., Tekniker vb.), hizmet sınıfları (GİH, TH, SH, YH) ve hiyerarşi sıralaması.
+* **Yetki & Sistem Rolleri:** Öğrenci İşleri Yöneticisi, Harç ve Mali İşler Sorumlusu, Not/Transkript Onay Yetkilisi gibi esnek yetki kutucuklarıyla donatılmış rol şablonları.
+* **İdari Personel Kadrosu:** Yeni personel tanımlanırken birim, kadro unvanı ve sistem rolü serbest metin olarak değil, doğrudan tanımlı teşkilat listelerinden seçilir.
 
-```csharp
-// Program.cs
-builder.Services.AddSecurityApplication();
-builder.Services.AddSecurityInfrastructure(builder.Configuration);
-app.MapSecurityEndpoints();
-```
-</details>
+### 5. 📚 Ders Seçimi, Dönemlik Şube Açımları & Haftalık Program
+* **Şubeleşme (Sections):** Derslerin A, B, C şubeleri olarak açılması, kontenjan tanımları, şubeye öğretim elemanı ve derslik atanması.
+* **İnteraktif Ders Kayıt (Ekle-Bırak):** Öğrencilerin dönem başında ders seçmesi, çakışma (time collision) ve kontenjan kontrolleri, danışman onayı akışı.
+* **Haftalık Ders Çizelgesi:** Öğrenci ve eğitmen bazında gün/saat/derslik matrisi.
 
-<details>
-<summary><b>📬 2. Notifications Module (Templated Email, SMS Gateways, OTP)</b></summary>
-<br>
+### 6. 📝 Sınav, Değerlendirme & Bağıl Notlandırma (Çan Eğrisi)
+* **Esnek Değerlendirme Planı:** Vize (%40), Final (%60), Proje, Kısa Sınav (Quiz) ve Laboratuvar ağırlıkları.
+* **Bağıl Değerlendirme Sistemi (BDS - Çan Eğrisi):** Sınıf ortalaması, standart sapma ve T-Skoru hesaplamalarıyla dinamik harf notu (AA, BA, BB, CB, CC, DC, DD, FD, FF) dağılımı.
+* **Transkript & GANO:** 4.00 üzerinden Dönem Ağırlıklı Not Ortalaması (DNO) ve Genel Ağırlıklı Not Ortalaması (GANO) hesaplamaları, resmi transkript dökümü.
 
-> **Standalone Documentation:** [`docs/modules/notifications.md`](docs/modules/notifications.md)
-
-- **📧 Responsive HTML Email Templates**: Pre-configured responsive card templates supporting verification codes (OTP) and action buttons.
-- **🎨 Brand Customization**: Externalized configuration for logos, brand accent colors, support links, and addresses.
-- **📱 SMS Gateway Integration**: Send verification SMS or system broadcast alerts with provider-agnostic HTTP and Console adapters.
-- **🔄 Lifecycle & Resilient Retries**: Manage message statuses (`Pending`, `Sent`, `Failed`, `Cancelled`) with automated retries.
-
-```csharp
-// Program.cs
-builder.Services.AddNotificationsApplication();
-builder.Services.AddNotificationsInfrastructure(builder.Configuration);
-app.MapNotificationsEndpoints();
-```
-</details>
-
-<details>
-<summary><b>📁 3. Files Module (AWS S3, MinIO, Local Disk, Chunked Upload)</b></summary>
-<br>
-
-> **Standalone Documentation:** [`docs/modules/files.md`](docs/modules/files.md)
-
-- **☁️ Multi-Provider Storage**: Switch between AWS S3 / MinIO and Local Disk via `appsettings.json` or `.env`.
-- **🔒 SHA-256 Checksums**: Automated file integrity verification and duplicate detection.
-- **🛡️ Access Authorization**: Configurable role and owner-based download permissions.
-- **📦 Memory-Efficient Streaming**: Zero-buffer streaming for multi-gigabyte uploads and downloads.
-
-```csharp
-// Program.cs
-builder.Services.AddFilesApplication();
-builder.Services.AddFilesInfrastructure(builder.Configuration);
-app.MapFilesEndpoints();
-```
-</details>
-
-<details>
-<summary><b>🌐 4. Translations Module (Multi-Language Catalog & Fallback)</b></summary>
-<br>
-
-> **Standalone Documentation:** [`docs/modules/translations.md`](docs/modules/translations.md)
-
-- **🌍 Supported Languages**: Turkish (`TR`), English (`EN`), German (`DE`), and Russian (`RU`).
-- **🔄 Automatic Fallback**: Missing language keys automatically fall back to Turkish without throwing errors.
-- **⚡ In-Memory & Redis Caching**: Sub-millisecond localized key lookups.
-
-```csharp
-// Program.cs
-builder.Services.AddTranslationsApplication();
-builder.Services.AddTranslationsInfrastructure(builder.Configuration);
-app.MapTranslationsEndpoints();
-```
-</details>
-
-<details>
-<summary><b>📝 5. Auditing Module (Structured Audit Trail & Trace Linkage)</b></summary>
-<br>
-
-> **Standalone Documentation:** [`docs/modules/auditing.md`](docs/modules/auditing.md)
-
-- **📊 Comprehensive Change History**: Records actor ID, entity name, previous/new JSON states, and client IP.
-- **🔍 Distributed Tracing Correlation**: Directly correlated with OpenTelemetry `Activity.Current.TraceId`.
-- **🛡️ Dedicated Database Isolation**: Isolated storage to prevent tampering.
-
-```csharp
-// Program.cs
-builder.Services.AddAuditingApplication();
-builder.Services.AddAuditingInfrastructure(builder.Configuration);
-app.MapAuditingEndpoints();
-```
-</details>
-
-<details>
-<summary><b>📨 6. Messaging Module (Transactional Outbox Pattern)</b></summary>
-<br>
-
-> **Standalone Documentation:** [`docs/modules/messaging.md`](docs/modules/messaging.md)
-
-- **📬 Transactional Outbox Pattern**: Guarantees zero message loss by committing domain events within the business transaction.
-- **🔄 Asynchronous Worker**: Background dispatcher polls pending messages and pushes to message brokers (RabbitMQ).
-- **🛡️ Idempotency Verification**: Built-in deduplication keys.
-
-```csharp
-// Program.cs
-builder.Services.AddMessagingApplication();
-builder.Services.AddMessagingInfrastructure(builder.Configuration);
-app.MapMessagingEndpoints();
-```
-</details>
-
-<details>
-<summary><b>⏰ 7. Scheduling Module (Background Jobs & Cron Engine)</b></summary>
-<br>
-
-> **Standalone Documentation:** [`docs/modules/scheduling.md`](docs/modules/scheduling.md)
-
-- **⏱️ Standard 5-Field Cron**: Run recurring background routines using expressions like `*/15 * * * *`.
-- **⏳ One-Shot Delayed Tasks**: Execute tasks at future timestamps.
-- **⚡ On-Demand Triggers & History**: Manually invoke tasks and inspect execution logs.
-
-```csharp
-// Program.cs
-builder.Services.AddSchedulingApplication();
-builder.Services.AddSchedulingInfrastructure(builder.Configuration);
-app.MapSchedulingEndpoints();
-```
-</details>
-
-<details>
-<summary><b>🔗 8. Webhooks Module (HMAC-SHA256 Signatures & Delivery Retries)</b></summary>
-<br>
-
-> **Standalone Documentation:** [`docs/modules/webhooks.md`](docs/modules/webhooks.md)
-
-- **🔐 Cryptographic HMAC Signatures**: Payload authenticity verification via `X-Webhook-Signature`.
-- **🔄 Zero-Downtime Secret Rotation**: Rotate endpoint credentials without service interruption.
-- **⚡ Exponential Backoff Retries**: Automatic delivery retries with full HTTP audit trail.
-
-```csharp
-// Program.cs
-builder.Services.AddWebhooksApplication();
-builder.Services.AddWebhooksInfrastructure(builder.Configuration);
-app.MapWebhooksEndpoints();
-```
-</details>
-
-<details>
-<summary><b>📊 9. Import & Export Module (Async CSV/Excel Ingestion)</b></summary>
-<br>
-
-> **Standalone Documentation:** [`docs/modules/import-export.md`](docs/modules/import-export.md)
-
-- **⚡ Asynchronous File Ingestion**: Large CSV/XLSX imports process in the background without blocking requests.
-- **📈 Real-Time Progress Tracking**: Polling endpoints report completed percentage and row counts.
-- **🛡️ Row-Level Validation**: Pinpoints exact invalid rows and validation errors.
-
-```csharp
-// Program.cs
-builder.Services.AddImportExportApplication();
-builder.Services.AddImportExportInfrastructure(builder.Configuration);
-app.MapImportExportEndpoints();
-```
-</details>
-
-<details>
-<summary><b>🧱 10. BuildingBlocks (Shared Kernel & Resilience Bedrock)</b></summary>
-<br>
-
-> **Standalone Documentation:** [`docs/modules/building-blocks.md`](docs/modules/building-blocks.md)
-
-- **🏛️ Domain Primitives**: Base `Entity<T>`, `ValueObject`, `IDomainEvent`, and `Result<T>`.
-- **🛡️ Polly v8 Resilience**: Unified circuit breakers, rate limiters, retries with jitter, and timeouts.
-- **⚡ Hybrid Caching (`ICacheService`)**: Transparent L1 memory + L2 Redis caching.
-- **📖 Scalar OpenAPI Engine**: Rich, interactive API docs out of the box at `/scalar/v1`.
-
-```csharp
-// Program.cs
-builder.Services.AddOpenApiWithScalar();
-builder.Services.AddHybridCaching(builder.Configuration);
-builder.Services.AddResiliencePipelines();
-app.MapOpenApiWithScalar();
-```
-</details>
+### 7. 🛡️ Güvenlik, Kimlik & Giriş Deneyimi
+* **e-Devlet & obsKimlik:** Kurumsal giriş sayfasında standart şifreli girişin yanında **e-Devlet Kapısı** ve **obsKimlik** entegrasyonu.
+* **FIDO2 / WebAuthn Biyometrik Giriş (Passkeys):** Touch ID, Face ID ve Windows Hello ile şifresiz, güvenli donanımsal kimlik doğrulama.
+* **Asimetrik RSA-256 JWT & Oturum Yönetimi:** Özel anahtarla imzalanan tokenlar, cihaz takibi ve anlık uzaktan oturum sonlandırma.
+* **Giriş Ekranı Özelleştirme:** Öğrenci işlerinin giriş arkaplan resimlerini yükleyebildiği, slayt süresini ve geçiş animasyonunu ayarlayabildiği dinamik yapı.
 
 ---
 
-## 🚀 Quick Start & Deployment
+## 🛠️ Teknoloji Yığını
 
-### 1. Clone & Prepare Environment Variables
+| Katman | Teknoloji / Kütüphane | Açıklama |
+|---|---|---|
+| **Backend Framework** | .NET 10 & C# 13 | Yüksek performanslı Minimal API ve Modular Monolith mimarisi |
+| **ORM & Persistence** | Entity Framework Core 10 | Microsoft SQL Server 2022 sağlayıcısı (`UseSqlServer`) |
+| **CQRS & Mediator** | MediatR 12 | Komut ve sorgu ayrımı, Pipeline Behaviors |
+| **Doğrulama & Kurallar** | FluentValidation | Request ve Domain doğrulama kuralları |
+| **Resilience & Fault Tolerance** | Polly v8 | Circuit Breaker, Retry with Jitter, Timeout, Rate Limiting |
+| **Önbellek (Caching)** | Redis + In-Memory | İki seviyeli (L1/L2) hibrit önbellek mekanizması |
+| **Dokümantasyon** | Scalar OpenAPI UI | Modern, interaktif API test konsolu (`/scalar/v1`) |
+| **Frontend Framework** | React 19 & TypeScript | Hızlı ve güvenli modern Single Page Application (SPA) |
+| **UI Bileşen Kütüphanesi** | Ant Design (antd v6) | Kurumsal standartlarda zengin masa ve tablo bileşenleri |
+| **Tasarım & Stil** | Tailwind CSS & Vanilla CSS | Modern, responsive, koyu/açık tema ve slayt animasyonları |
+| **Derleme & Paketleme** | Vite 8 | Ultra hızlı modül yükleme ve optimize üretim derlemesi |
 
-Copy the template `.env.example` into `.env` on your deployment server or local development machine:
+---
 
+## 🚀 Hızlı Başlangıç & Çalıştırma
+
+### 1. Depoyu Klonlayın
 ```bash
-# Clone repository
-git clone https://github.com/your-org/universal-api-kernel.git
-cd universal-api-kernel
-
-# Copy example environment configuration
-cp docker/.env.example docker/.env
+git clone https://github.com/ismailcanuslu/ogrenci-bilgi-sistemi.git
+cd ogrenci-bilgi-sistemi
 ```
 
-> [!TIP]
-> Edit `docker/.env` to configure database passwords, JWT private key, S3 bucket settings, and SMS/SMTP provider credentials.
+### 2. Kaynak Dostu Docker Altyapısını Başlatın (Önerilen)
+Sistem kaynaklarını (RAM & CPU) korumak için gereksiz PostgreSQL, MinIO ve Mailpit servisleri devre dışı bırakılmış olup, yalnızca **MSSQL (SQL Server) ve Redis** ayağa kalkar:
 
----
-
-## 🐳 Docker Compose & Environment Configuration
-
-The solution features clean separation between **Infrastructure Services** (Databases, Caches, Storage) and **Application Services** (APIs):
-
-### Step 1: Start Infrastructure Services
 ```bash
 docker compose -f docker/docker-compose.infra.yml up -d
 ```
+*Bu komutla:*
+* 🗄️ **Microsoft SQL Server 2022:** `localhost:1433` (Kullanıcı: `sa`, Şifre: `Password123!`)
+* ⚡ **Redis Cache:** `localhost:6379`
+kullanıma hazır hale gelir.
 
-This starts:
-- 🗄️ **Microsoft SQL Server 2022** on `localhost:1433`
-- 🐘 **PostgreSQL 16** on `localhost:5432`
-- ⚡ **Redis Cache** on `localhost:6379`
-- ☁️ **MinIO S3 Object Storage** on `localhost:9000` (Console: `localhost:9001`)
-- 📧 **Mailpit SMTP Server** on `localhost:1025` (Web Inbox: `localhost:8025`)
-
-### Step 2: Start Application Services
-
-#### Option A: Unified Modular Monolith (Recommended)
-Run the all-in-one **Bootstrapper** container hosting all modules in a single process:
+### 3. Backend API'yi Çalıştırın (.NET Modular Monolith)
 ```bash
-docker compose -f docker/docker-compose.app.yml up -d obs-bootstrapper
+dotnet run --project src/Bootstrapper/Bootstrapper.csproj
 ```
-- **API Base URL:** `http://localhost:5000`
-- **Scalar Interactive Documentation:** `http://localhost:5000/scalar/v1`
+* **API Adresi:** `http://localhost:5050`
+* **Scalar İnteraktif Dokümantasyon:** `http://localhost:5050/scalar/v1`
 
-#### Option B: Standalone Microservices
-Launch all modules as independent microservices:
+### 4. Frontend SPA Portalı Çalıştırın (React 19 + Ant Design)
 ```bash
-docker compose -f docker/docker-compose.app.yml up -d
+cd src/Clients/react-web-app
+npm install
+npm run dev
 ```
-Each service exposes its own isolated Scalar UI:
-| Microservice | Port | Scalar Documentation |
-|---|---|---|
-| **Security API** | `5001` | `http://localhost:5001/scalar/v1` |
-| **Files API** | `5002` | `http://localhost:5002/scalar/v1` |
-| **Notifications API** | `5003` | `http://localhost:5003/scalar/v1` |
-| **Translations API** | `5004` | `http://localhost:5004/scalar/v1` |
-| **Auditing API** | `5005` | `http://localhost:5005/scalar/v1` |
-| **Messaging API** | `5006` | `http://localhost:5006/scalar/v1` |
-| **Scheduling API** | `5007` | `http://localhost:5007/scalar/v1` |
-| **Webhooks API** | `5008` | `http://localhost:5008/scalar/v1` |
-| **Import & Export API** | `5009` | `http://localhost:5009/scalar/v1` |
+* **OBS Web Portalı:** `http://localhost:5173`
 
 ---
 
-## 🧪 Automated Testing & Architecture Verification
+## 🧪 Testler & Mimari Doğrulama
 
-The solution includes a comprehensive suite of unit, integration, and architectural rule tests:
+Sistem, katmanlar arası bağımlılık kurallarını ve domain mantığını sürekli sınayan 100+ otomatik test barındırır:
 
 ```bash
 dotnet test
 ```
-
-```
-Toplam 1 test dosyası belirtilen desenle eşleşti.
-Başarılı!  - Başarısız: 0, Başarılı: 104, Atlanan: 0, Toplam: 104
-```
-
-- **Domain Isolation Tests**: Verifies domain projects never reference infrastructure, persistence, or API projects.
-- **CQRS Handler Tests**: Verifies commands, queries, and business rules across all modules.
+* **Domain İzolasyon Testleri (`NetArchTest`):** Domain katmanının dış projelere, EF Core veya HTTP kütüphanelerine referans vermediğini matematiksel olarak doğrular.
+* **CQRS Handler Testleri:** Akademik kayıt, notlandırma ve yetkilendirme komutlarının beklenen sonuçları verdiğini doğrular.
 
 ---
 
-## 🤖 AI-Assisted Engineering & Disclaimers
-
-- **AI Pair Programming**: This architecture, design patterns, and domain implementations were actively co-engineered using **Google Gemini** (DeepMind Antigravity) and **OpenAI ChatGPT**.
-- **Logo Disclaimer**: The project logo was generated using ChatGPT (DALL-E) as an open-source visual symbol and does not represent a registered corporate trademark.
+## 👥 Kullanıcı Rolleri ve Demo Yetkileri
+Sisteme giriş yaparken test edebileceğiniz kurumsal roller:
+* **Öğrenci (STUDENT):** Ders kayıt, transkript görüntüleme, harç ve başvuru işlemleri.
+* **Öğretim Üyesi (ACADEMIC):** Not girişi, şube yönetimi, akademik profil ve araştırma çıktıları.
+* **Öğrenci İşleri Masası (STAFF):** Öğrenci kayıt, fakülte/bölüm yönetimi, AKTS limitleri ve idari teşkilat.
+* **Sistem Yöneticisi (ADMIN):** Yetki şablonları, sistem rolleri ve genel kurumsal parametreler.
 
 ---
 
-## 📄 License
-This project is licensed under the [MIT License](LICENSE).
+## 📄 Lisans
+Bu proje [MIT Lisansı](LICENSE) kapsamında açık kaynak olarak lisanslanmıştır.

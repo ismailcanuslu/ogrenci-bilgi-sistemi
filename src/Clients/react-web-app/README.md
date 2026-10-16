@@ -1,35 +1,44 @@
-# React + TypeScript + Vite
+# 🎓 Üniversite Öğrenci Bilgi Sistemi (OBS) — React Web SPA
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Modern, yüksek performanslı ve kurumsal standartlarda geliştirilmiş **Öğrenci Bilgi Sistemi (OBS / ÜBYS)** istemci arayüzü.
 
-Currently, two official plugins are available:
+## 🚀 Teknolojiler
+* **React 19 & TypeScript 6**
+* **Vite 8:** Anlık HMR ve hızlı üretim paketi
+* **Ant Design (antd v6):** Zengin kurumsal tablolar, modal formlar ve istatistik kartları
+* **Tailwind CSS & Vanilla CSS:** Duyarlı (responsive) gridler, cam efektleri (glassmorphism) ve animasyonlar
+* **React Router v7:** Rol bazlı yönlendirme ve korumalı rotalar (`ProtectedRoute`, `RoleIndexRedirect`)
+* **Context API:** `AuthContext` (JWT & Oturum), `LanguageContext` (TR, EN, DE, RU çoklu dil motoru)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🗂️ Modül & Sayfa Yapısı
+* **`/login` & `/forgot-password`:** Giriş ekranı (arka plan slayt gösterisi, progress bar, e-Devlet & obsKimlik giriş desteği, animasyonlu şifre sıfırlama)
+* **`/users/students`:** Asil Öğrenci Masası (Öğrenci listesi, kayıt dondurma, ilişik kesme, mezuniyet takibi)
+* **`/users/guest-students`:** Misafir & Değişim Öğrencileri (Erasmus+, Farabi, Mevlana, Özel Öğrenci masası)
+* **`/users/instructors` & `/affairs/instructors`:** Eğitmen & Akademisyenler Masası (Akademik kadro, unvan filtreleme)
+* **`/affairs/instructors/profile`:** Öğrenim, Yayın & Araştırma Masası (Öğrenim dereceleri, makaleler, kitaplar, bildiriler, projeler, açık erişim: ORCID & Google Scholar bağlantıları)
+* **`/admin/staff`:** İdari Personel Kadrosu Masası
+* **`/admin/units`:** İdari Teşkilat Birimleri Masası (Daire Başkanlıkları, Koordinatörlükler, Sekreterlikler)
+* **`/admin/staff-titles`:** İdari Kadro Unvanları Masası (Hizmet sınıfları, hiyerarşi sıralaması)
+* **`/admin/roles`:** Yetki & Sistem Rolleri Masası (Detaylı işlem izinleri şablonu)
+* **`/affairs/faculties` & `/affairs/departments`:** Fakülte ve Bölüm Teşkilatı Yönetimi (Dekan atama, dönemlik AKTS sınırları)
+* **`/affairs/courses` & `/education-catalog`:** Bölüm Ders Kataloğu ve Eğitim Müfredatı
+* **`/settings/institution` & `/settings/login-page`:** Üniversite Kurumsal Bilgileri & Giriş Ekranı Özelleştirme Masası
 
-## React Compiler
+## 💻 Yerel Geliştirme (Local Development)
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+```bash
+# Bağımlılıkları yükleyin
+npm install
 
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+# Geliştirme sunucusunu başlatın
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+* **Tarayıcıda Açın:** `http://localhost:5173`
+
+## 📦 Üretim Paketi Derleme (Production Build)
+
+```bash
+npm run build
+```
+TypeScript derleme kontrolü (`tsc -b`) ve Vite optimizasyonundan sonra `/dist` klasörüne statik varlıklar üretilir.
